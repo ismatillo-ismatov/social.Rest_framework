@@ -5,11 +5,12 @@ verify_ssl = true
 
 [dev-packages]
 
-[packages]puypy
+[packages]
 django = "*"
 djangorestframework = "*"
 pillow = "*"
 djangorestframework-simplejwt = "*"
+django-widget-tweaks = "*"
 
 [requires]
 python_version = "3.9"
