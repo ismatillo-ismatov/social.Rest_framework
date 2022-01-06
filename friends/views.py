@@ -13,10 +13,10 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser
 
 
-class FriendViewSet(viewsets.ModelViewSet):
+
+class FriendViewSet(viewsets.ViewSet):
     parser_classes = [JSONParser]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerReadOnly]
-    serializer_class = FriendRequestSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     def get_queryset(self):
         user = self.request.user.pk
         q1 = FriendsRequest.objects.filter(request_from=user,status="Accepted")
@@ -62,8 +62,8 @@ class FriendViewSet(viewsets.ModelViewSet):
         request.data['_mutable']=True
         request.data['request_from']=self.request.user.pk
         request.data['_mutable']=False
-        already_friend = FriendsRequest.objects.filter(request_from=request.data['request.from'],request_to=request.data["request_to"],status='Accepted').exists()
-        already_sent = FriendsRequest.objects.filter(request_from=request.data['request.from'],request_to=request.data["request_to"],status='pending').exists()
+        already_friend = FriendsRequest.objects.filter(request_from=request.data['request_from'],request_to=request.data["request_to"],status='Accepted').exists()
+        already_sent = FriendsRequest.objects.filter(request_from=request.data['request_from'],request_to=request.data["request_to"],status='pending').exists()
 
         if already_friend:
             return Response({"message":"You are already friend.."})

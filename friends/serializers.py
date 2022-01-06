@@ -6,4 +6,4 @@ from django.contrib.auth.models import User
 class FriendRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendsRequest
-        fields = ['id','request_from','request_to','status']
+        fields = ['request_from','request_to','status']
