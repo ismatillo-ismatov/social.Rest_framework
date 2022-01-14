@@ -12,6 +12,7 @@ from user_profile.permissions import IsOwnerReadOnly
 from .models import Message
 from .serializers import *
 
+<<<<<<< HEAD
 
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
@@ -21,6 +22,15 @@ class MessageViewSet(viewsets.ModelViewSet):
     def message_list(request,sender, receiver):
         if request.method == "GET":
             messages = Message.objects.get(sender_id=sender,receiver_id=receiver)
+=======
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerReadOnly]
+    def post(request,sender=None ,receiver=None):
+        if request.method == "GET":
+            messages = Message.objects.filter(sender_id=sender,receiver_id=receiver)
+>>>>>>> db91a3d81bace7ad8afad4de8af6ff25e4fad668
             serializer = MessageSerializer(messages,many=True, context={"request":request})
             return JsonResponse(serializer.data,safe=False)
         elif request.method == "POST":
@@ -30,5 +40,7 @@ class MessageViewSet(viewsets.ModelViewSet):
                 serializer.save()
                 return JsonResponse(serializer.data,status=201)
             return JsonResponse(serializer.errors,status=400)
-    # def perform_create(self, serializer):
-    #     serializer.save(owner=self.request.user)
+
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
