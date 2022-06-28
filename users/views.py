@@ -4,8 +4,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .serializer import UserSerializer
+from django.views.decorators.csrf import csrf_exempt
+
 
 class UserViewSet(viewsets.ViewSet):
+
     def list(self,request):
         queryset = User.objects.all()
         serializer = UserSerializer(queryset,many=True)
