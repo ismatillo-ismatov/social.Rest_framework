@@ -11,6 +11,8 @@ djangorestframework = "*"
 pillow = "*"
 djangorestframework-simplejwt = "*"
 django-widget-tweaks = "*"
+dj-rest-auth = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.9"

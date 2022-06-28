@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'users',
     "api",
     "user_profile",
@@ -47,8 +48,23 @@ INSTALLED_APPS = [
     'friends',
     'widget_tweaks',
     'chat',
+    'rest_framework.authtoken',
+    'allauth',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'allauth.account',
 ]
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+SITE_ID = 1
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES':[
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES':[
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -90,6 +106,27 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+#
+# DATABASES = {
+#
+#     'default': {
+#
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#
+#         'NAME': "postgres",
+#
+#         'USER': 'drmuser',
+#
+#         'PASSWORD': 'crm1234',
+#
+#         'HOST': 'localhost',
+#
+#         'PORT': '5433',
+#
+#     }
+#
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

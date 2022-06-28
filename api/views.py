@@ -6,7 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 
 class BlackListTokenUpdateView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = ()
     authentication_classes = ()
     def post(self,request):
         try:
