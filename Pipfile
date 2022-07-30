@@ -13,6 +13,8 @@ djangorestframework-simplejwt = "*"
 django-widget-tweaks = "*"
 dj-rest-auth = "*"
 psycopg2 = "*"
+django-environ = "*"
+postgres = "*"
 
 [requires]
 python_version = "3.9"
