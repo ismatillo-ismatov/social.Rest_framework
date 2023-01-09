@@ -14,8 +14,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 
 class CustomAuthToken(ObtainAuthToken):
-    # authentication_classes = [SessionAuthentication,BaseAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [SessionAuthentication,BaseAuthentication]
+    permission_classes = [IsAuthenticated]
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
                                            context={'request': request})
