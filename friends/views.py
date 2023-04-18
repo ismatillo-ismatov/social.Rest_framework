@@ -43,7 +43,7 @@ class FriendViewSet(viewsets.ViewSet):
     def get_object(self,pk):
         user=self.request.user.pk
         try:
-            friend =FriendsRequest.objects.filter(request_from=user,request_to=pk)
+            friend = FriendsRequest.objects.filter(request_from=user,request_to=pk)
             if self.request.method=="GET":
                 if friend.exists():
                     friend_id=friend.values()[0]["request_to_id"]
