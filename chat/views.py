@@ -45,5 +45,10 @@ class MessageViewSet(viewsets.ModelViewSet):
 
 
 
-
-
+    def update(self, request, pk=None):
+        message = Message.objects.get(pk=pk)
+        serializer = MessageSerializer(message, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
