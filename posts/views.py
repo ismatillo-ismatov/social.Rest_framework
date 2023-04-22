@@ -3,12 +3,17 @@ from rest_framework import viewsets,permissions
 from .models import Post
 from .serializers import PostSerializer
 from user_profile.permissions import IsOwnerReadOnly
-
+from .pagination import CustomPagination
 
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerReadOnly]
+    pagination_class = CustomPagination
+
+
+
+
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -18,4 +23,5 @@ class PostViewSet(viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         instance.delete()
-        
+
+
