@@ -10,3 +10,11 @@ class Post(models.Model):
 
     def __str__(self):
         return self.content
+
+class Story(models.Model):
+    owner = models.ForeignKey("auth.User",related_name='user',on_delete=models.CASCADE)
+    title = models.CharField(max_length=100)
+    story = models.FileField('stories',upload_to="story")
+    story_date = models.DateField(auto_now_add=True)
+    
+
