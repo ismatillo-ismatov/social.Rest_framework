@@ -38,7 +38,7 @@ class UserViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
 
-    @swagger_auto_schema(operation_summary='hello')
+    @swagger_auto_schema(operation_summary='user llist')
     def list(self,request):
         queryset = User.objects.all()
         serializer = UserSerializer(queryset,many=True)
