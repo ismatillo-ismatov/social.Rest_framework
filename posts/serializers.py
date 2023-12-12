@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Story
+from .models import Post, Story,StoryMessage
 from comments.serializers import CommentSerializer
 from votes.serializers import VoteSerializer
 
@@ -12,8 +12,20 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class StorySerializer(serializers.ModelSerializer):
-    votes = VoteSerializer(many=True,read_only=True)
 
     class Meta:
         model = Story
-        fields = ('id','owner','story','story_date','votes')
+        fields = ['id','title', 'story','story_date']
+        read_only_fields = ["owner"]
+
+    def create(self,validated_data):
+        user = self.context['request'].user
+        validated_data['owner'] = user
+        return super().create(validated_data)
+
+
+
+class StoryMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StoryMessage
+        fields = ('id','sender','recipient','story','message','created_date')

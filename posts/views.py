@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets,permissions
-from .models import Post,Story
-from .serializers import PostSerializer,StorySerializer
+from .models import Post,Story,StoryMessage
+from .serializers import PostSerializer,StorySerializer,StoryMessageSerializer
 from user_profile.permissions import IsOwnerReadOnly
 from .pagination import CustomPagination
 
@@ -28,4 +28,17 @@ class PostViewSet(viewsets.ModelViewSet):
 class StoryViewSet(viewsets.ModelViewSet):
     queryset = Story.objects.all()
     serializer_class = StorySerializer
-    permissions = [permissions.IsAuthenticatedOrReadOnly,IsOwnerReadOnly]
+    permission_class = [permissions.IsAuthenticated]
+
+    def perform_create(self,serializer):
+        serializer.save(owner=self.request.user)
+
+
+
+class StoryMessageViewSet(viewsets.ModelViewSet):
+    queryset = StoryMessage.objects.all()
+    serializer_class = StoryMessageSerializer
+    permission_class = [permissions.IsAuthenticated,IsOwnerReadOnly]
+
+    def perform_class(self,serializer):
+        serializer.save(sender=self.request.user)
