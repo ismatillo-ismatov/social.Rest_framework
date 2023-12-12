@@ -10,6 +10,8 @@ from rest_framework.decorators import action
 from rest_framework import viewsets
 from user_profile.permissions import IsOwnerReadOnly
 from .models import Message
+from posts.models import Story
+from posts.serializers import StorySerializer
 from rest_framework.permissions import IsAuthenticated
 from .serializers import *
 
@@ -52,3 +54,16 @@ class MessageViewSet(viewsets.ModelViewSet):
             serializer.save()
             return JsonResponse(serializer.data)
         return JsonResponse(serializer.errors, status=400)
+
+# class StoryMessage(viewsets.ModelViewSet):
+#     queryset = Story.objects.all()
+#     serializer_class = StorySerializer
+#     permission_classes = [IsAuthenticated]
+#
+#
+#     def story_message(self,request,sender,receiver):
+#         if request.method == "GET":
+#             return render(request,{'users':User.objects.exclude(username=request.user.username),
+#                                 'receive':User.objects.get(id=receiver),
+#                                 'message':  Story.objects.filter(sender_id=receiver,receiver=sender)
+#                                    })
