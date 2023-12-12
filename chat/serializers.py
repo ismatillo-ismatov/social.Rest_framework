@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import *
+from posts.models import Story
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -17,3 +18,5 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ["sender","receiver", "message", "timestamp"]
+
+
