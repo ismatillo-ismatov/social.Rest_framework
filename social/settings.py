@@ -58,9 +58,11 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'allauth',
     'dj_rest_auth',
+    'allauth.socialaccount',
     'dj_rest_auth.registration',
     'allauth.account',
     'drf_yasg',
+    'corsheaders'
 
 
 
@@ -72,18 +74,23 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES':[
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
 
     ],
 
+
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 5
 }
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
 
 
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'dj_rest_auth.registration.serializers.RegisterSerializer',  # O'zgartirilmagan holatda
+}
 
 SWAGGER_SETTINGS = {
    'SECURITY_DEFINITIONS': {
@@ -103,8 +110,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware'
+    'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+CORS_ALLOWED_ORIGINS = [
+    "http://192.168.43.197:8000",  # Kompyuteringizning IP manzili
+]
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 ROOT_URLCONF = 'social.urls'
