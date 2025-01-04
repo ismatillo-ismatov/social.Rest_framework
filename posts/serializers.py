@@ -1,15 +1,21 @@
 from rest_framework import serializers
 from .models import Post, Story,StoryMessage
 from comments.serializers import CommentSerializer
-from votes.serializers import VoteSerializer
+from votes.serializers import LikeSerializer
 
 class PostSerializer(serializers.ModelSerializer):
+    owner = serializers.StringRelatedField()
     comments = CommentSerializer(many=True,read_only=True)
-    votes = VoteSerializer(many=True,read_only=True)
+    likes = LikeSerializer(many=True,read_only=True)
     class Meta:
         model = Post
-        fields = ('id','owner','content','post_image','category','post_date','comments',"votes")
+        fields = ('id','owner','content','postImage','post_date','comments',"likes",)
 
+    def get_image_url(self,obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_obsolute_uri(obj.image.url)
+        return None
 
 class StorySerializer(serializers.ModelSerializer):
 
