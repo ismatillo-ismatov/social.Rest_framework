@@ -1,4 +1,5 @@
 from tokenize import Token
+from venv import create
 
 from django.db.migrations.serializer import serializer_factory
 from django.shortcuts import render
@@ -6,7 +7,6 @@ from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, BaseAuthentication, TokenAuthentication
 from rest_framework import viewsets,status
 from django.shortcuts import get_object_or_404
-from rest_framework.response import Response
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
@@ -34,7 +34,13 @@ class UserCreateApiView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                'user': serializer.data,
+                'token':token.key,
+            },
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -43,7 +49,7 @@ class UserViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
 
-    @swagger_auto_schema(operation_summary='user llist')
+    @swagger_auto_schema(operation_summary='user list')
     def list(self,request):
         queryset = User.objects.all()
         serializer = UserSerializer(queryset,many=True)

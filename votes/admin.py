@@ -1,3 +1,5 @@
 from django.contrib import admin
-from .models import Vote
-admin.site.register(Vote)
+from .models import Like
+@admin.register(Like)
+class Likes(admin.ModelAdmin):
+    list_display = ('id','post','user','created_at')
