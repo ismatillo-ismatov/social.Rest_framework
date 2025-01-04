@@ -1,6 +1,8 @@
 asgiref==3.8.1
 certifi==2024.8.30
+cffi==1.17.1
 charset-normalizer==3.4.0
+cryptography==43.0.3
 dj-database-url==2.3.0
 dj-rest-auth==5.0.0
 Django==5.1.2
@@ -12,9 +14,12 @@ djangorestframework-simplejwt==5.3.1
 drf-yasg==1.21.8
 idna==3.10
 inflection==0.5.1
+mysqlclient==2.2.5
 packaging==24.1
 pillow==11.0.0
+pycparser==2.22
 PyJWT==2.9.0
+PyMySQL==1.1.1
 python-decouple==3.8
 pytz==2024.2
 PyYAML==6.0.2

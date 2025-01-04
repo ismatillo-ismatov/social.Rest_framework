@@ -6,11 +6,16 @@ from user_profile.permissions import IsOwnerReadOnly
 from .pagination import CustomPagination
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
+    # queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerReadOnly]
     pagination_class = CustomPagination
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return  Post.objects.filter(owner=user)
+        return Post.objects.none()
 
 
 
