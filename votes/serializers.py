@@ -1,8 +1,8 @@
-from .models import Vote
+from .models import Like
 from rest_framework import serializers
-class VoteSerializer(serializers.ModelSerializer):
-    up_vote_by = serializers.ReadOnlyField(source="up_vote_by.username")
-    down_vote_by = serializers.ReadOnlyField(source="down_vote_by.username")
+class LikeSerializer(serializers.ModelSerializer):
+    like = serializers.ReadOnlyField(source="username")
+    # down_vote_by = serializers.ReadOnlyField(source="down_vote_by.username")
     class Meta:
-        model = Vote
-        fields = ["id","post","up_vote_by","down_vote_by"]
+        model = Like
+        fields = ["id","post","like","created_at"]
