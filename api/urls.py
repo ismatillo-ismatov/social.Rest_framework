@@ -2,7 +2,8 @@ from os.path import basename
 
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
-from users.views import UserViewSet
+
+from users.views import UserViewSet, UserSearchAPIView
 from user_profile.views import UserProfileView
 # from user_profile.views import ProfileViewSet
 from posts.views import PostViewSet,StoryViewSet,StoryMessageViewSet
@@ -14,7 +15,6 @@ from chat.views import *
 
 router=DefaultRouter()
 router.register(r"users",UserViewSet,basename='users')
-# router.register(r'profiles',ProfileViewSet)
 router.register(r'posts',PostViewSet,basename='posts')
 router.register(r'story',StoryViewSet)
 router.register(r'comments',CommentViewSet,basename="comment")
@@ -26,8 +26,8 @@ urlpatterns=router.urls
 
 urlpatterns = [
     path('my-profile/',UserProfileView.as_view(),name='my-profile'),
-    # path('likes/',LikeAPIView.as_view(),name='likes'),
-    path('',include(router.urls))
+    path('search_users/',UserSearchAPIView.as_view(),name='search_users'),
+    path('',include(router.urls)),
 ]
 
 
