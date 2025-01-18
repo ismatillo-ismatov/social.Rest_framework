@@ -71,7 +71,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 SITE_ID = 1
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES':[
-        'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES':[
         # 'rest_framework.authentication.BasicAuthentication',
@@ -117,7 +118,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://192.168.43.197:8000",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
-
 
 ROOT_URLCONF = 'social.urls'
 

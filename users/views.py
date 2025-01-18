@@ -1,8 +1,9 @@
 from tokenize import Token
-from venv import create
-
-from django.db.migrations.serializer import serializer_factory
-from django.shortcuts import render
+from django.db.models import Q,Value
+from django.db import  connection
+from django.db.models.functions import Concat
+from rest_framework.filters import SearchFilter
+from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication, BaseAuthentication, TokenAuthentication
 from rest_framework import viewsets,status
@@ -10,6 +11,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
+from user_profile.models import UserProfile
+from user_profile.serializer import ProfileSerializer
 from .serializer import UserSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.views.decorators.csrf import csrf_exempt
@@ -69,3 +72,16 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(queryset,pk=pk)
         serializer = UserSerializer(user)
         return Response(serializer.data)
+
+
+
+
+
+
+
+class UserSearchAPIView(ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [SearchFilter]
+    search_fields = ['username','email',]
