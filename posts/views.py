@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets,permissions
+from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Post,Story,StoryMessage
 from .serializers import PostSerializer,StorySerializer,StoryMessageSerializer
 from user_profile.permissions import IsOwnerReadOnly
@@ -10,6 +11,7 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly,IsOwnerReadOnly]
     pagination_class = CustomPagination
+    parser_classes = [MultiPartParser,FormParser]
 
     def get_queryset(self):
         user = self.request.user
