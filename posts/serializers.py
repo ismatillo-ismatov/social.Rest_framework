@@ -1,3 +1,5 @@
+from urllib.request import build_opener
+
 from rest_framework import serializers
 from .models import Post, Story,StoryMessage
 from comments.serializers import CommentSerializer
@@ -9,12 +11,18 @@ class PostSerializer(serializers.ModelSerializer):
     likes = LikeSerializer(many=True,read_only=True)
     class Meta:
         model = Post
-        fields = ('id','owner','content','postImage','post_date','comments',"likes",)
+        fields = ('id','owner','content','postImage','postVideo','post_date','comments',"likes",)
 
     def get_image_url(self,obj):
         request = self.context.get('request')
         if obj.image:
-            return request.build_obsolute_uri(obj.image.url)
+            return request.build_absolute_uri(obj.image.url)
+        return None
+
+    def get_video_url(self,obj):
+        request = self.context.get('request')
+        if obj.postVideo:
+            return request.build_absolute_uri(obj.postVideo.url)
         return None
 
 class StorySerializer(serializers.ModelSerializer):

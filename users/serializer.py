@@ -15,10 +15,18 @@ class UserSerializer(serializers.ModelSerializer):
     userprofile = ProfileSerializer(read_only=True)
     ownerProfileImage = serializers.SerializerMethodField()
     posts = serializers.SerializerMethodField()
+    profile_id = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['username','password','email','userprofile','ownerProfileImage','posts']
+        fields = ['id','username','password','email','userprofile','ownerProfileImage','posts','profile_id']
         extra_kwargs = {'password': {'write_only':True}}
+
+
+    def get_profile_id(self,obj):
+        if hasattr(obj,'profile'):
+            return  obj.profile.id
+        return None
 
     def create(self,validated_data):
         user = User.objects.create_user(**validated_data)
@@ -36,5 +44,4 @@ class UserSerializer(serializers.ModelSerializer):
             return  PostSerializer(obj.posts.all(),many=True).data
         return []
 
-    # def get_posts(self, obj):
-    #     return PostSerializer(obj.user.posts.all(), many=True).data
+
