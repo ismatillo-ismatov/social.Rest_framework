@@ -20,13 +20,15 @@ router.register(r'story',StoryViewSet)
 router.register(r'comments',CommentViewSet,basename="comment")
 router.register(r'likes',LikeViewSet,basename="likes")
 router.register(r'friends',FriendViewSet,basename="friends")
-router.register(r'Messages',MessageViewSet,basename="messages")
+router.register(r'messages',MessageViewSet,basename="messages")
 router.register(r'story-message',StoryMessageViewSet)
 urlpatterns=router.urls
 
 urlpatterns = [
     path('my-profile/',UserProfileView.as_view(),name='my-profile'),
     path('search_users/',UserSearchAPIView.as_view(),name='search_users'),
+    path('friend-detail/<str:username>/',FriendViewSet.as_view({'get':'retrieve'}),name='friend-detail'),
+    path('find-friends/',FriendViewSet.as_view({'get':'find_friends'}),name='find-friends'),
     path('',include(router.urls)),
 ]
 
