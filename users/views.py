@@ -84,4 +84,4 @@ class UserSearchAPIView(ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [SearchFilter]
-    search_fields = ['username','email',]
+    search_fields = ['id','username','email']

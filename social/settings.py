@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import json
 from pathlib import Path
 from decouple import config
 import dj_database_url
@@ -62,11 +62,27 @@ INSTALLED_APPS = [
     'dj_rest_auth.registration',
     'allauth.account',
     'drf_yasg',
-    'corsheaders'
+    'corsheaders',
+    'channels',
 
 
 
 ]
+ASGI_APPLICATION = 'social.asgi.application'
+
+KAFKA_PRODUCER_CONFIG = {
+    'bootstrap_servers':'localhost:9092',
+    'value_serializer':lambda v: json.dumps(v).encode('utf-8'),
+}
+
+KAFKA_CONSUMER_CONFIG = {
+    'bootstrap_servers':'localhost:9092',
+    'group_id':'message-consumer-group',
+    'value_deserializer':lambda m: json.loads(m.decode('utf-8'))
+}
+
+
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 SITE_ID = 1
 REST_FRAMEWORK = {
@@ -102,6 +118,9 @@ SWAGGER_SETTINGS = {
       }
    }
 }
+
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -115,7 +134,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 CORS_ALLOWED_ORIGINS = [
-    "http://192.168.43.197:8000",
+    #"http://192.168.43.197:8000",
+    "http://192.168.100.8:8000",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -147,19 +167,7 @@ WSGI_APPLICATION = 'social.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-# DATABASES={}
-# if DEBUG:
-#     DATABASES["default"] = {
-#
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#
-# }
-# else:
-#     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
-#     DATABASES['default'] = dj_database_url.config(default=config('DATABASE_URL'))
-#
-#
+
 
 DATABASES = {
     'default':{
