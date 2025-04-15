@@ -1,3 +1,9 @@
+from datetime import timezone
+from tokenize import Triple
+
+from django.contrib.admin.templatetags.admin_list import pagination
+from django.core.paginator import Paginator
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from drf_yasg.inspectors.field import serializer_field_to_basic_type
 from rest_framework import generics,viewsets
@@ -9,13 +15,12 @@ from .models import FriendsRequest
 from .serializers import FriendRequestSerializer
 from rest_framework import permissions
 from rest_framework.decorators import action
-from user_profile.permissions import IsOwnerReadOnly
 from users.serializer import UserSerializer
 from django.http import Http404,request
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
-from django.http import  JsonResponse
+from django.http import JsonResponse
 
 
 class FriendViewSet(viewsets.ViewSet):
@@ -25,16 +30,58 @@ class FriendViewSet(viewsets.ViewSet):
 
     @action(detail=False,methods=['get'])
     def check_status(self,request):
-        sender = request.user.profile
+        sender = self.request.user.profile
         username = request.query_params.get('username',None)
         if not username:
             return Response({"error":"Username required"},status=400)
-        receiver = get_object_or_404(UserProfile,userName=username)
         try:
-            friend_request = FriendsRequest.objects.get(request_from=sender,request_to=receiver)
-            return  Response({"status": friend_request.status})
+            receiver = UserProfile.objects.get(userName__username=username)
+        except UserProfile.DoesNotExist:
+            return Response({"error":"User not found"},status=404)
+        try:
+            outgoing_request = FriendsRequest.objects.filter(
+                request_from=sender,
+                request_to=receiver
+            ).first()
+            incoming_request = FriendsRequest.objects.filter(
+                request_from=receiver,
+                request_to=sender
+            ).first()
+            if outgoing_request:
+                return  Response({
+                    "status": outgoing_request.status,
+                    "direction":"outgoing",
+                    'request_id':outgoing_request.id,
+                    })
+            elif incoming_request:
+                return Response({
+                    "status": incoming_request.status,
+                    "direction":"incoming",
+                    "request_id":incoming_request.id
+                })
+            else:
+                return Response({
+                    "status":"none",
+                    "direction":"none"
+                })
+
         except FriendsRequest.DoesNotExist:
             return Response({"status":"none"})
+
+
+    @action(detail=False,methods=['post'],url_path='update-online-status')
+    def update_online_status(self,request):
+        user_profile = request.user.profile
+        is_online = request.data.get('is_online',False)
+        user_profile.is_online = is_online
+        if not is_online:
+            user_profile.last_activity = timezone,now()
+        user_profile.save()
+        return Response({
+            'status':'success',
+            'is_online':user_profile.is_online,
+            'last_activity':user_profile.last_activity
+        })
 
 
     def get_queryset(self):
@@ -58,21 +105,73 @@ class FriendViewSet(viewsets.ViewSet):
         friends = UserProfile.objects.filter(id__in=result)
         return friends
 
-    def get_object(self, pk):
+    @action(detail=False,methods=['GET'])
+    def incoming_pending_requests(self,request):
+        if not request.user.is_authenticated:
+            return Response({"error":"Authentication required"},status=status.HTTP_401_UNAUTHORIZED)
         try:
+            user_profile = request.user.profile
+        except AttributeError:
+            return Response({"error":"User profile not found"},status=status.HTTP_400_BAD_REQUEST)
+        print(f"Foydalanuvchi profili: {user_profile.id}")
+        pending_request = FriendsRequest.objects.filter(
+            request_to=user_profile,
+            status="Pending"
+        )
+        print(f"Pending sorovlar: {pending_request}")
+        if pending_request.exists():
+            request_from_users = [request.request_from.id for request in pending_request]
+            pending = UserProfile.objects.filter(id__in=request_from_users)
+            serializer = ProfileSerializer(pending,many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"message":"You have no pending requests"})
+
+    @action(detail=False, methods=['GET'])
+    def outgoing_pending_requests(self, request):
+        user_profile = request.user.profile
+        print(f"Foydalanuvchi profili: {user_profile.id}")
+        pending_request = FriendsRequest.objects.filter(
+            request_from=user_profile,
+            status="Pending"
+        )
+        print(f"Pending sorovlar: {pending_request}")
+        if pending_request.exists():
+            request_from_users = [request.request_to.id for request in pending_request]
+            pending = UserProfile.objects.filter(id__in=request_from_users)
+            serializer = ProfileSerializer(pending, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"message": "You have no pending requests"})
+
+    def get_object(self,):
+        try:
+            pk = self.kwargs.get('pk')
+            if pk is None:
+                raise Http404("Primary key (pk) is required.")
             user_profile = UserProfile.objects.get(userName=self.request.user)
             friend = FriendsRequest.objects.filter(request_from=user_profile, request_to_id=pk)
             if self.request.method == "GET":
                 if friend.exists():
                     friend_id = friend.values()[0]["request_to_id"]
                     return UserProfile.objects.get(pk=friend_id)
+                else:
+                    raise Http404("Friend request not found.")
             elif self.request.method == ['PUT', 'DELETE']:
-                return friend
+                if friend.exists():
+                    return friend.first()
+                else:
+                    raise Http404("friend request not found")
+        except UserProfile.DoesNotExist:
+            raise Http404("UserProfile not found")
 
         except UserProfile.DoesNotExist:
             return Response({"error":"userProfile not found"},status=status.HTTP_404_NOT_FOUND)
         except FriendsRequest.DoesNotExist:
             return Response ({"error":"FriendRequest not found"},status=status.HTTP_404_NOT_FOUND)
+
+
+
 
 
 
@@ -93,29 +192,32 @@ class FriendViewSet(viewsets.ViewSet):
         if request.user.profile == request_to_profile:
             return JsonResponse({"error": "You cannot send a friend request to yourself"},status=status.HTTP_400_BAD_REQUEST)
 
+        active_requests = FriendsRequest.objects.filter(
+            (Q(request_from=request.user.profile, request_to=request_to_profile) |
+            Q(request_from=request_to_profile, request_to=request.user.profile)) &
+            (Q(status='Pending') | Q(status='Accepted'))
+        ).exists()
+        if active_requests:
+            return  Response({"error":"Friend request already exists or has already been send by the other user"},
+                             status=status.HTTP_400_BAD_REQUEST
+                             )
 
-
-
-
-
-
-
-        already_friend = FriendsRequest.objects.filter(
+        rejected_request = FriendsRequest.objects.filter(
             request_from=request.user.profile,
             request_to=request_to_profile,
-            status='Accepted'
-        ).exists()
+            status='Rejected'
+        ).first()
 
-        if already_friend:
-            return Response({"error": "Friend request already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        if rejected_request:
+            rejected_request.status = 'Pending'
+            rejected_request.save()
+            serializer = FriendRequestSerializer(rejected_request)
+            return Response(serializer.data,status=status.HTTP_200_OK)
 
 
-        if FriendsRequest.objects.filter(
-                request_from=request.user.profile,
-                request_to=request_to_profile,
-                status='Pending'
-            ).exists():
-            return Response({"error":"Friend request already sent"},status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
         friend_request = FriendsRequest.objects.create(
             request_from=request.user.profile,
@@ -125,10 +227,12 @@ class FriendViewSet(viewsets.ViewSet):
         serializer = FriendRequestSerializer(friend_request)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
 
-
-    def retrieve(self, request, username=None):
+    def retrieve(self, request,*args,**kwargs):
         try:
-            user_profile = self.request.user.profile
+            username = kwargs.get('username')
+            if not username:
+                return  Response({"error":"Username is required."},status=status.HTTP_400_BAD_REQUEST);
+            user_profile = request.user.profile
             friend_profile = UserProfile.objects.get(userName__username=username)
 
             friend_request = FriendsRequest.objects.filter(
@@ -148,17 +252,110 @@ class FriendViewSet(viewsets.ViewSet):
 
 
     def update(self, request, pk=None):
-        friend = self.get_object(pk)
-        serializer = FriendRequestSerializer(friend,data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        try:
+            friend_request = FriendsRequest.objects.get(id=pk)
+            serializer = FriendRequestSerializer(friend_request,data=request.data,partial=True)
 
-    def destroy(self, request, pk=None):
-        friend = self.get_object(pk)
-        friend.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,status=status.HTTP_200_OK)
+        except FriendsRequest.DoesNotExist:
+            return Response({"error":"Friend request not found"},status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self,request,pk=None):
+        try:
+            current_user_profile = request.user.profile
+            friend_request = FriendsRequest.objects.get(
+                request_from_id=current_user_profile,
+                request_to_id=pk,
+                status="Pending"
+            )
+
+            friend_request.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except FriendsRequest.DoesNotExist:
+            return Response({"error":"Friend request not found or already processed"},
+            status=status.HTTP_404_NOT_FOUND
+                            )
+
+    @action(detail=False, methods=["GET"])
+    def friend_list(self, request):
+        try:
+            current_user = request.user
+            friends_from = FriendsRequest.objects.filter(
+                request_from=current_user,
+                status="Accepted"
+            ).select_related('request_to')
+
+            friends_to = FriendsRequest.objects.filter(
+                request_from=current_user,
+                status="Accepted"
+            ).select_related('request_from')
+
+            friends = []
+            for friend_request in friends_from:
+                friends.append(friend_request.request_to)
+
+            for friends_request in friends_to:
+                friends.append(friends_request.friends_from)
+
+            serializer = ProfileSerializer(friends,many=True)
+            return Response({
+                "count":len(friends),
+                'results': serializer.data
+            })
+        except Exception as e:
+            return Response(
+                {"error":str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+    @action(detail=True,methods=['GET'])
+    def user_friends(self,request,pk=None):
+        try:
+            page = request.query_params.get('page', 1)
+            page_size = request.query_params.get('page_size', 10)
+            target_user_profile = UserProfile.objects.get(id=pk)
+            friends_from = FriendsRequest.objects.filter(
+                request_from=target_user_profile,
+                status="Accepted"
+            ).select_related('request_to')
+
+            friends_to = FriendsRequest.objects.filter(
+                request_to=target_user_profile,
+                status='Accepted',
+            ).select_related("request_from")
+            friends=[]
+            for friends_request in friends_from:
+                friends.append(friends_request.request_to)
+
+            for friends_request in friends_to:
+                friends.append(friends_request.request_from)
+
+            unique_friends = list({friend.id: friend for friend in friends}.values())
+            paginator = Paginator(unique_friends, page_size)
+            page_obj = paginator.get_page(page)
+            serializer = ProfileSerializer(page_obj, many=True)
+            return Response({
+                "count": paginator.count,
+                "next": page_obj.has_next(),
+                "previous": page_obj.has_previous(),
+                "results": serializer.data
+            })
+
+            serializer = ProfileSerializer(unique_friends,many=True)
+            return Response({
+                "count": len(unique_friends),
+                "results": serializer.data,
+            })
+        except UserProfile.DoesNotExist:
+            return Response({
+                "error": "User not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
 
     @action(detail=False,methods=["GET"])
     def find_friends(self,request):
@@ -203,39 +400,43 @@ class FriendViewSet(viewsets.ViewSet):
             return Response({"message": "You have no incoming request"})
 
     @action(detail=True, methods=["put"], name='Accept Friend Request')
-    # @action(detail=False,methods=['GET'])
-    # def incoming_requests(self, request):
-    #     incoming_requests = FriendsRequest.objects.filter(request_to__userName=self.request.user,status="pending")
-    #     if incoming_requests.exists():
-    #         request_from_users = []
-    #         for i in range(len(incoming_requests.values())):
-    #             request_from_users.append(incoming_requests.values()[i]['request_from_id'])
-    #         pending = UserProfile.objects.filter(id__in=request_from_users).values()
-    #         serializer = UserSerializer(pending,many=True)
-    #         return Response(serializer.data)
-    #     else:
-    #         return Response({"message":"You have any incoming request"})
-    # @action(detail=True,methods=["put"],name='Accept Friend Request')
-    def friendsrequest(self,request,pk):
-        print(pk)
-        incoming_request = FriendsRequest.objects.filter(request_to=self.request.user,request_from=pk,status='pending').get()
-        print(incoming_request)
-        serializer = FriendRequestSerializer(incoming_request,data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-    @friendsrequest.mapping.delete
-    def delete_request(self,request,pk):
-        print(pk)
+    def accept_friend_request(self,request,pk):
         try:
-            incoming_request = FriendsRequest.objects.filter(request_to=self.request.user,request_from=pk,status='pending')
-            print(incoming_request)
-            incoming_request.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            incoming_request = FriendsRequest.objects.get(
+                request_to=self.request.user.profile,
+                request_from__id=pk,
+                status='Pending'
+            )
+            incoming_request.status = 'Accepted'
+            incoming_request.save()
+            return Response({
+                "message":"Friend request accepted",
+                "request_id": incoming_request.id,
+                "status":"Accepted"
+            }, status=status.HTTP_200_OK)
+        except FriendsRequest.DoesNotExist:
+            return Response({"error":"Friend request not found"},status=404)
+
+
+    @action(detail=True,methods=['put'])
+    def reject_friend_request(self,request,pk=None):
+        try:
+            friend_request = FriendsRequest.objects.get(
+                request_from__id=pk,
+                request_to=request.user.profile,
+                status="Pending"
+            )
+            friend_request.status = 'Rejected'
+            friend_request.save()
+            return Response({"status":"success"}, status=status.HTTP_200_OK)
+        except FriendsRequest.DoesNotExist:
+            return Response(
+                {"error": "Friend request not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
 
     @action(detail=False, methods=['post'])
     def send_request(self, request):
@@ -269,3 +470,30 @@ class FriendViewSet(viewsets.ViewSet):
         else:
             return JsonResponse({"message": "no sent  Requests found!"})
 
+
+    @action(detail=True,methods=['delete'],url_path='delete-friend')
+    def delete_friend(self,request,pk=None):
+        try:
+            user_profile = request.user.profile
+            friend_profile = UserProfile.objects.get(id=pk)
+            friendship = FriendsRequest.objects.filter(
+                (Q(request_from=user_profile, request_to=friend_profile) |
+                 Q(request_from=friend_profile,request_to=user_profile) &
+                Q(status='Accepted')
+                 )
+            ).first()
+
+            if not friendship:
+                return Response(
+                    {"Error":"Friendship not found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            friendship.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except UserProfile.DoesNotExist:
+            return Response(
+                {"error":"User profile not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )

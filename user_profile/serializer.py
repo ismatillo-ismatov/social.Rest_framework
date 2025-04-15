@@ -8,14 +8,14 @@ from .models import UserProfile
 from rest_framework import serializers
 
 class ProfileSerializer(serializers.ModelSerializer):
+    is_online = serializers.BooleanField(read_only=True)
+    last_activity = serializers.DateTimeField(read_only=True)
     posts = serializers.SerializerMethodField()
     messages = SerializerMethodField()
-    # userName = UserSerializer()
     userName = serializers.ReadOnlyField(source="userName.username")
-    # userName = serializers.CharField(source="username")
     class Meta:
         model = UserProfile
-        fields = ['id', 'userName', 'gender', 'dob', 'phone', 'profileImage','posts','messages',]
+        fields = ['id', 'userName', 'gender', 'dob', 'phone', 'profileImage','is_online','last_activity','posts','messages',]
 
     def get_posts(self,obj):
         return PostSerializer(obj.userName.posts.all(), many=True).data

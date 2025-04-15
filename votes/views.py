@@ -14,25 +14,6 @@ from rest_framework.decorators import action
 from .models import Like
 from .serializers import LikeSerializer
 
-# class LikeAPIView(APIView):
-#     def post(self,request,*args,**kwargs):
-#         post_id = request.data.get('post')
-#         if not post_id:
-#             return Response({'post': ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
-#         post = get_object_or_404(Post,id=post_id)
-#         like, created = Like.objects.get_or_create(post=post,user=request.user)
-#
-#         if create:
-#             serializer = LikeSerializer(like)
-#             return  Response(serializer.data,status=status.HTTP_201_CREATED)
-#         else:
-#             return Response ({'detail':'Already liked'},status=status.HTTP_400_BAD_REQUEST)
-#
-#     def delete(self,request,*args,**kwargs):
-#         like_id = kwargs.get('pk')
-#         like = get_object_or_404(Like,like_id,user=request.user)
-#         like.delete()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -63,38 +44,3 @@ class LikeViewSet(viewsets.ModelViewSet):
 
 
 
-        # post_instance = get_object_or_404(Post,pk=kwargs.get("pk"))
-        # like_instance = Like.objects.filter(post=post_instance,user=self.request.user).first()
-        #
-        # if like_instance:
-        #     like_instance.delete()
-        #     return Response({"message": "Like removed successfully."},status=status.HTTP_204_NO_CONTENT)
-        # else:
-        #     return Response({"message": "No like found for this post."},status=status.HTTP_404_NOT_FOUND)
-
-
-
-
-        # else:
-        #     like_instance = Like.objects.filter(post=post_instance,user=self.request.user).first()
-        #     if like_instance is None:
-        #         raise serializers.ValidationError({"message": "No Like found for this post."})
-        #     like_instance.delete()
-
-        # if self.request.data['post']:
-        #     already_liked = Like.objects.filter(post=post_instance,user=self.request.user).exists()
-        #     if already_liked:
-        #         raise serializers.ValidationError({"message":"you have already liked this post"})
-        #     else:
-        #         serializer.save(user=self.request.user,post=post_instance)
-
-
-
-    # @action(detail=False, methods=['delete'], url_path='unlike/(?P<post_id>[^/.]+)')
-    # def unlike(self,reqeust,post_id=None):
-    #     try:
-    #         like_instance = Like.objects.get(post_id=post_id,user=reqeust.user)
-    #         like_instance.delete()
-    #         return Response({"detail":"Like removed successfully."},status=status.HTTP_204_NO_CONTENT)
-    #     except Like.DoesNotExists:
-    #         return Response({"detail": "No Like matches the given query."},status=status.HTTP_404_NOT_FOUND)
