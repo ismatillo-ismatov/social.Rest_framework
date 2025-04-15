@@ -1,3 +1,6 @@
+from os.path import defpath
+
+from django.contrib.admin import action
 from django.contrib.staticfiles.views import serve
 from django.utils.termcolors import RESET
 from drf_yasg.openapi import Response
@@ -21,30 +24,3 @@ class UserProfileView(APIView):
         return  Response(serializer.data)
 
 
-        # user = request.user
-        #
-        # profile = UserProfile.objects.get(userName=user)
-        # posts = Post.objects.filter(owner=user)
-        # profile_data = ProfileSerializer(profile).data
-        # profile_data['posts'] = ProfileSerializer(posts,many=True).data
-        # return Response(profile_data)
-
-
-
-        # try:
-        #     user_profile = UserProfile.objects.get(userName=user)
-        #     serializer  = ProfileSerializer(user_profile)
-        #     return  Response(serializer.data)
-        # except UserProfile.DoesNotExist:
-        #     return  Response({'error':'UserProfile Does not exits.'},status=404)
-
-
-
-# class ProfileViewSet(APIView):
-#     queryset = UserProfile.objects.all()
-#     serializer_class = ProfileSerializer
-#     permission_classes = [permissions.IsAuthenticatedOrReadOnly,
-#                           IsOwnerReadOnly]
-#
-#     def perform_create(self, serializer):
-#         serializer.save(owner=self.request.user)
