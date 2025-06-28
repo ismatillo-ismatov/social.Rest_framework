@@ -9,21 +9,46 @@ class PostSerializer(serializers.ModelSerializer):
     owner = serializers.StringRelatedField()
     comments = CommentSerializer(many=True,read_only=True)
     likes = LikeSerializer(many=True,read_only=True)
+
+    liked = serializers.SerializerMethodField()
+    likeCount = serializers.SerializerMethodField()
+    likeId = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = ('id','owner','content','postImage','postVideo','post_date','comments',"likes",)
+        fields = ('id','owner','content','postImage','postVideo','post_date','comments',"likes","liked","likeCount","likeId")
 
-    def get_image_url(self,obj):
+    def get_image_url(self, obj):
         request = self.context.get('request')
         if obj.image:
-            return request.build_absolute_uri(obj.image.url)
-        return None
+            url = obj.postImage.url
+            if not url.startswith('http'):
+                return request.build_absolute_url(url)
+            return  url
 
     def get_video_url(self,obj):
         request = self.context.get('request')
         if obj.postVideo:
             return request.build_absolute_uri(obj.postVideo.url)
         return None
+
+    def get_liked(self,obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.votes.filter(user=request.user).exists()
+        return False
+
+
+
+    def get_likeCount(self,obj):
+        return obj.votes.count()
+
+    def get_likeId(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            like = obj.votes.filter(user=request.user).first()
+            return like.id if like else None
+        return None
+
 
 class StorySerializer(serializers.ModelSerializer):
 
