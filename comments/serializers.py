@@ -2,13 +2,13 @@ from rest_framework import serializers
 from .models import Comment
 from django.contrib.auth.models import User
 
-class UserSerializer(serializers.ModelSerializer):
+class ShortUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields  = ('username',)
+        fields  = ('id','username',)
 
 class CommentSerializer(serializers.ModelSerializer):
-    owner = UserSerializer(read_only=True)
+    owner = ShortUserSerializer(read_only=True)
     ownerProfileImage = serializers.SerializerMethodField()
     ownerUserName = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
@@ -39,7 +39,7 @@ class CommentSerializer(serializers.ModelSerializer):
     def get_replies(self,obj):
         replies = obj.replies.all()
         print(f"Reply for comment{obj.id}:{replies}")
-        return CommentSerializer(replies, many=True).data
+        return ReplySerializer(replies, many=True,context=self.context).data
 
 
     def get_is_liked(self,obj):
@@ -50,3 +50,23 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_like_count(self,obj):
         return obj.likes.count()
+
+class ReplySerializer(serializers.ModelSerializer):
+    owner = ShortUserSerializer(read_only=True)
+    ownerProfileImage = serializers.SerializerMethodField()
+    ownerUserName = serializers.SerializerMethodField()
+
+
+    class Meta:
+        model = Comment
+        fields = ['id','comment','owner','ownerProfileImage','ownerUserName','comment_date']
+
+    def get_ownerUserName(self,obj):
+        if hasattr(obj.owner,'profile') and obj.owner.profile.userName:
+            return str(obj.owner.profile.userName)
+        return None
+
+    def get_ownerProfileImage(self,obj):
+        if hasattr(obj.owner,'profile') and obj.owner.profile.profileImage:
+            return obj.owner.profile.profileImage.url
+        return None

@@ -15,11 +15,18 @@ def default_userprofile():
 
 
 class Message(models.Model):
-    sender = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="sender",null=False,default=default_userprofile)
-    receiver = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="receiver",null=False,default=default_userprofile)
-    # sender = models.ForeignKey(User,on_delete=models.CASCADE,related_name="sender")
-    # receiver = models.ForeignKey(User,on_delete=models.CASCADE,related_name="receiver")
+    sender = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="sender",null=False)
+    receiver = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="receiver",null=False)
     message = models.CharField(max_length=1200)
+    replied_to = models.ForeignKey('self', null=True,blank=True,on_delete=models.SET_NULL,related_name='replies')
+    file = models.FileField(upload_to='chat_files/',null=True,blank=True)
+    type = models.CharField(max_length=10,choices= [
+        ('text','Text'),
+        ('image','Image'),
+        ('video','Video'),
+        ('audio','Audio'),
+    ], default='text',
+                            )
     timestamp = models.DateTimeField(auto_now_add=True,auto_now=False)
     is_read = models.BooleanField(default=False)
 
