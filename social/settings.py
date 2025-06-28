@@ -64,22 +64,69 @@ INSTALLED_APPS = [
     'drf_yasg',
     'corsheaders',
     'channels',
+    'notification',
 
 
 
 ]
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_kafka.core.KafkaChannelLayer",
+#         "CONFIG": {
+#             "bootstrap_servers": ["localhost:9092"],  # yoki Kafka turgan joy
+#             "group_id": "your-consumer-group",
+#             "topics": {
+#                 "default": {
+#                     "num_partitions": 1,
+#                     "replication_factor": 1
+#                 }
+#             }
+#         },
+#     }
+# }
+
+
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer",
+#     }
+# }
+
 ASGI_APPLICATION = 'social.asgi.application'
 
-KAFKA_PRODUCER_CONFIG = {
-    'bootstrap_servers':'localhost:9092',
-    'value_serializer':lambda v: json.dumps(v).encode('utf-8'),
+KAFKA_CONSUMER_CONFIG = {
+    'bootstrap_servers': 'localhost:9092',
+    'group_id': 'message-consumer-group',
+    'value_deserializer': lambda m: json.loads(m.decode('utf-8')),
+    'auto_offset_reset': 'earliest',
+    'enable_auto_commit': True
 }
 
-KAFKA_CONSUMER_CONFIG = {
-    'bootstrap_servers':'localhost:9092',
-    'group_id':'message-consumer-group',
-    'value_deserializer':lambda m: json.loads(m.decode('utf-8'))
+KAFKA_PRODUCER_CONFIG = {
+    'bootstrap_servers': 'localhost:9092',
+    'value_serializer': lambda v: json.dumps(v).encode('utf-8')
 }
+
+# KAFKA_PRODUCER_CONFIG = {
+#     'bootstrap_servers':'localhost:9092',
+#     'value_serializer':lambda v: json.dumps(v).encode('utf-8'),
+# }
+#
+# KAFKA_CONSUMER_CONFIG = {
+#     'bootstrap_servers':'localhost:9092',
+#     'group_id':'message-consumer-group',
+#     'value_deserializer':lambda m: json.loads(m.decode('utf-8'))
+# }
 
 
 
@@ -108,6 +155,7 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
 REST_AUTH_REGISTER_SERIALIZERS = {
     'REGISTER_SERIALIZER': 'dj_rest_auth.registration.serializers.RegisterSerializer',
 }
+
 
 SWAGGER_SETTINGS = {
    'SECURITY_DEFINITIONS': {

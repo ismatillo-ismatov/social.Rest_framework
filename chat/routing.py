@@ -1,7 +1,6 @@
-from django.urls import path, re_path
-from .consumers import KafkaWebSocketConsumer
+from django.urls import re_path
+from chat.consumers import RedisConsumer
+
 websocket_urlpatterns = [
-    # path("ws/chat/<int:sender>/<int:receiver>/",ChatConsumer.as_asgi()),
-    re_path(r'ws/messages/$',KafkaWebSocketConsumer.as_asgi()),
-    # path(r'ws/messages/',KafkaWebSocketConsumer.as_asgi()),
+    re_path(r'ws/messages/$',RedisConsumer.as_asgi()),
 ]

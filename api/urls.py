@@ -6,11 +6,13 @@ from zope.interface import named
 
 from friends.models import FriendsRequest
 from users.views import UserViewSet, UserSearchAPIView
-from user_profile.views import UserProfileView
+from user_profile.views import UserProfileView, UserProfileDetailView
 from posts.views import PostViewSet,StoryViewSet,StoryMessageViewSet
 from comments.views import CommentViewSet
+from votes.admin import Likes
 from votes.views import  LikeViewSet
 from friends.views import FriendViewSet
+from notification.views import NotificationListAPIView, mark_notification_as_read
 from chat.views import *
 
 router=DefaultRouter()
@@ -26,6 +28,7 @@ urlpatterns=router.urls
 
 urlpatterns = [
     path('my-profile/',UserProfileView.as_view(),name='my-profile'),
+    path('user/<int:pk>/',UserProfileDetailView.as_view(),name='user-profile-datail'),
     path('search_users/',UserSearchAPIView.as_view(),name='search_users'),
     path('users/<int:pk>/friends/',FriendViewSet.as_view({'get':'user_friends'}),name='user-friends'),
     path('update-online-status/',FriendViewSet.as_view({'post':'update_online_status'}),name='update-online-status'),
@@ -37,7 +40,9 @@ urlpatterns = [
     path('friends/<int:pk>/action-delete-request/',FriendViewSet.as_view({'delete':'delete_request'}),name='friend-delete-request'),
     path('friends/<int:pk>/delete-friend/',FriendViewSet.as_view({'delete':'delete_friend'}),name='friend-delete'),
     path('friends/<int:pk>/',FriendViewSet.as_view({'delete':'destroy'}),name='friend-request-detail'),
-    # path('find-friends/',FriendViewSet.as_view({'get':'find_friends'}),name='find-friends'),
+    path('likes/toggle/',LikeViewSet.as_view({'post':'toggle_like'}),name='toggle'),
+    path('my-notification/',NotificationListAPIView.as_view(),name='my-notifications'),
+    path('mark_as_read/<int:pk>/',mark_notification_as_read,name='mark_is_read'),
     path('',include(router.urls)),
 ]
 
