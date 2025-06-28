@@ -75,7 +75,7 @@ class FriendViewSet(viewsets.ViewSet):
         is_online = request.data.get('is_online',False)
         user_profile.is_online = is_online
         if not is_online:
-            user_profile.last_activity = timezone,now()
+            user_profile.last_activity = timezone.now()
         user_profile.save()
         return Response({
             'status':'success',
