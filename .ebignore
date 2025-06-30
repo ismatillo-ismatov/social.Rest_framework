@@ -1,0 +1,16 @@
+env/
+media/
+awscliv2.zip
+get-pip.py
+*.pyc
+.envx
+__pycache__/
+.idea/
+.vscode/
+.git/
+*.log
+*.zip
+*.tar
+*.gz
+*.egg-info/
+*.dist-info/

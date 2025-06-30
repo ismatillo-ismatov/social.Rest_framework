@@ -32,7 +32,8 @@ SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG",cast=bool)
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.elasticbeanstalk.com','*']
+# ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -69,11 +70,12 @@ INSTALLED_APPS = [
 
 
 ]
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [("snaplife-redis-flzhdt.serverless.eun1.cache.amazonaws.com", 6379)],
         },
     },
 }
@@ -81,19 +83,15 @@ CHANNEL_LAYERS = {
 
 # CHANNEL_LAYERS = {
 #     "default": {
-#         "BACKEND": "channels_kafka.core.KafkaChannelLayer",
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
 #         "CONFIG": {
-#             "bootstrap_servers": ["localhost:9092"],  # yoki Kafka turgan joy
-#             "group_id": "your-consumer-group",
-#             "topics": {
-#                 "default": {
-#                     "num_partitions": 1,
-#                     "replication_factor": 1
-#                 }
-#             }
+#             "hosts": [("127.0.0.1", 6379)],
 #         },
-#     }
+#     },
 # }
+
+
+
 
 
 # CHANNEL_LAYERS = {
