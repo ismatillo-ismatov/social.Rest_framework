@@ -9,12 +9,7 @@ from rest_framework import serializers
 
 
 
-class MiniProfileSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='userName.username',read_only=True)
 
-    class Meta:
-        model = UserProfile
-        fields = ['id','username','profileImage']
 
 
 

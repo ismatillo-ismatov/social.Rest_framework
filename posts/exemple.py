@@ -1,18 +1,21 @@
-class ReplySerializer(serializers.ModelSerializer):
-    owner = ShortUserSerializer(read_only=True)
-    ownerProfileImage = serializers.SerializerMethodField()
-    ownerUserName = serializers.SerializerMethodField()
+@action(detail=True, methods=['POST'])
+def like(self, request, pk=None):
+    comment = self.get_object()
+    user = request.user
+    if user in comment.likes.all():
+        comment.likes.remove(user)
+        liked = False
+    else:
+        comment.likes.add(user)
+        liked = True
 
-    class Meta:
-        model = Comment
-        fields = ['id', 'comment', 'owner', 'ownerProfileImage', 'ownerUserName', 'comment_date']
+        if comment.owner != user:
+            Notification.objects.create(
+                sender=user,
+                receiver=comment.owner,
+                notification_type='comment_like',
+                post=comment.post,
+                comment=comment,
+            )
 
-    def get_ownerUserName(self, obj):
-        if hasattr(obj.owner, 'profile') and obj.owner.profile.userName:
-            return str(obj.owner.profile.userName)
-        return None
-
-    def get_ownerProfileImage(self, obj):
-        if hasattr(obj.owner, 'profile') and obj.owner.profile.profileImage:
-            return obj.owner.profile.profileImage.url
-        return None
+    return Response({'liked': liked, 'like_count': comment.like_count})

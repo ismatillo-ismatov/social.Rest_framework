@@ -17,3 +17,7 @@ class BlackListTokenUpdateView(APIView):
         except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+from django.http import HttpResponse
+
+def health_check(request):
+    return HttpResponse("OK")

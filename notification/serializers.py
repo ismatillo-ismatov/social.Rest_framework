@@ -4,7 +4,8 @@ from posts.serializers import PostSerializer
 from votes.serializers import LikeSerializer
 from .models import Notification
 from django.contrib.auth.models import User
-from user_profile.serializer import ProfileSerializer,MiniProfileSerializer
+from user_profile.serializer import ProfileSerializer
+from user_profile.miniProfile_serializer import MiniProfileSerializer
 from rest_framework import serializers
 from comments.models import Comment
 
