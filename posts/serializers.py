@@ -1,21 +1,45 @@
-from urllib.request import build_opener
+from asyncio import gather
 
 from rest_framework import serializers
+
+from user_profile.miniProfile_serializer  import MiniProfileSerializer
 from .models import Post, Story,StoryMessage
 from comments.serializers import CommentSerializer
 from votes.serializers import LikeSerializer
 
 class PostSerializer(serializers.ModelSerializer):
-    owner = serializers.StringRelatedField()
+    owner = serializers.SerializerMethodField()
+    # owner = MiniProfileSerializer(read_only=True)
     comments = CommentSerializer(many=True,read_only=True)
     likes = LikeSerializer(many=True,read_only=True)
-
     liked = serializers.SerializerMethodField()
     likeCount = serializers.SerializerMethodField()
     likeId = serializers.SerializerMethodField()
     class Meta:
         model = Post
         fields = ('id','owner','content','postImage','postVideo','post_date','comments',"likes","liked","likeCount","likeId")
+
+
+    def get_owner(self,obj):
+        profile = getattr(obj.owner,'profile',None)
+        request = self.context.get('request')
+        return {
+            'id': obj.owner.id,
+            'username': profile.userName.username if profile else obj.owner.username,
+            'profileImage': request.build_absolute_uri(profile.profileImage.url) if request and profile and  profile.profileImage else None
+        }
+
+
+    # def get_owner(self,obj):
+    #     profile = getattr(obj.owner,'profile',None)
+    #     request = self.context.get('request')
+    #
+    #     return {
+    #         'id':profile.id if profile else obj.owner.id,
+    #         'username': profile.userName.username if profile else obj.owner.username,
+    #         'profileImage': request.build_absolute_uri(profile.profileImage.url) if profile and profile.profileImage else None
+    #     }
+
 
     def get_image_url(self, obj):
         request = self.context.get('request')
@@ -48,6 +72,9 @@ class PostSerializer(serializers.ModelSerializer):
             like = obj.votes.filter(user=request.user).first()
             return like.id if like else None
         return None
+
+
+
 
 
 class StorySerializer(serializers.ModelSerializer):
