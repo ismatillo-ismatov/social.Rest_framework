@@ -22,7 +22,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     userName = serializers.ReadOnlyField(source="userName.username")
     class Meta:
         model = UserProfile
-        fields = ['id', 'userName', 'gender', 'dob', 'phone', 'profileImage','is_online','last_activity','posts','messages',]
+        fields = ['id', 'userName', 'gender', 'dob', 'phone', 'profileImage','is_online','last_activity','posts','messages','fcm_token']
 
 
     def get_posts(self,obj):

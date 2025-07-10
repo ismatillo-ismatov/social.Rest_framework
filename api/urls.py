@@ -12,8 +12,9 @@ from comments.views import CommentViewSet
 from votes.admin import Likes
 from votes.views import  LikeViewSet
 from friends.views import FriendViewSet
-from notification.views import NotificationListAPIView, mark_notification_as_read
+from notification.views import NotificationListAPIView, mark_notification_as_read,SendFCMNotificationView
 from chat.views import *
+from user_profile.views import save_fcm_token
 
 router=DefaultRouter()
 router.register(r"users",UserViewSet,basename='users')
@@ -43,6 +44,8 @@ urlpatterns = [
     path('likes/toggle/',LikeViewSet.as_view({'post':'toggle_like'}),name='toggle'),
     path('my-notification/',NotificationListAPIView.as_view(),name='my-notifications'),
     path('mark_as_read/<int:pk>/',mark_notification_as_read,name='mark_is_read'),
+    path('save_fcm_token/',save_fcm_token,name='save-fcm-token'),
+    path('send-fcm',SendFCMNotificationView.as_view()),
     path('',include(router.urls)),
 ]
 
