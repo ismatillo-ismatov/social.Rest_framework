@@ -18,7 +18,10 @@ class UserProfile(models.Model):
     profileImage = models.ImageField(upload_to="profile_image",null=True,blank=True)
     is_online = models.BooleanField(default=False)
     last_activity = models.DateTimeField(auto_now=True)
+<<<<<<< HEAD
     fcm_token = models.CharField(max_length=255,blank=True,null=True)
+=======
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
 
     def __str__(self):
         return f"{self.userName.username}"
