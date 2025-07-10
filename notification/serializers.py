@@ -15,8 +15,6 @@ class NotificationSerializer(serializers.ModelSerializer):
     comment = CommentSerializer(read_only=True)
     like = LikeSerializer(read_only=True)
     post = PostSerializer(read_only=True)
-    # sender = ShortUserSerializer(read_only=True)
-    # receiver = ShortUserSerializer(read_only=True)
     sender = MiniProfileSerializer(source='sender.profile',read_only=True)
     receiver = MiniProfileSerializer('receiver.profile',read_only=True)
     class Meta:

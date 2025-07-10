@@ -1,6 +1,4 @@
 from datetime import timezone
-from tokenize import Triple
-
 from django.contrib.admin.templatetags.admin_list import pagination
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -139,7 +137,7 @@ class FriendViewSet(viewsets.ViewSet):
         if pending_request.exists():
             request_from_users = [request.request_to.id for request in pending_request]
             pending = UserProfile.objects.filter(id__in=request_from_users)
-            serializer = ProfileSerializer(pending, many=True)
+            serializer = ProfileSerializer(pending, many=True,context={'request':request})
             return Response(serializer.data)
         else:
             return Response({"message": "You have no pending requests"})
@@ -394,7 +392,7 @@ class FriendViewSet(viewsets.ViewSet):
             for request in incoming_requests:
                 request_from_users.append(request.request_from.id)
             pending = UserProfile.objects.filter(id__in=request_from_users)
-            serializer = ProfileSerializer(pending, many=True)
+            serializer = ProfileSerializer(pending, many=True,context={'request':request})
             return Response(serializer.data)
         else:
             return Response({"message": "You have no incoming request"})
@@ -465,7 +463,7 @@ class FriendViewSet(viewsets.ViewSet):
             request_to_users = [request.request_to.id for request in send_requests]
 
             pending = UserProfile.objects.filter(id__in=request_to_users)
-            serializer = ProfileSerializer(pending, many=True)
+            serializer = ProfileSerializer(pending, many=True,context={'request':request})
             return Response(serializer.data)
         else:
             return JsonResponse({"message": "no sent  Requests found!"})
