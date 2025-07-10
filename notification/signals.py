@@ -1,15 +1,23 @@
+<<<<<<< HEAD
 from django.template.defaultfilters import title
 from .utils import send_notification
 
+=======
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from django.template.defaulttags import comment
 from django.contrib.auth.models import User
+<<<<<<< HEAD
 from fcm.fcm import send_push_notification
+=======
+
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
 from votes.models import Like
 from notification.models import Notification
 from comments.models import Comment
 
+<<<<<<< HEAD
 
 
 def send_test_notification(token,title,body):
@@ -23,6 +31,8 @@ def send_test_notification(token,title,body):
         print("❌ Xatolik:", e)
 
 
+=======
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
 @receiver(post_save,sender=Like)
 def create_notification_on_like(sender,instance,created,**kwargs):
     if created and instance.post.owner != instance.user:
@@ -33,9 +43,12 @@ def create_notification_on_like(sender,instance,created,**kwargs):
             notification_type='like',
             like=instance
         )
+<<<<<<< HEAD
         token = instance.owner.profile.fcm_token if hasattr(instance.post.owner,'profile') else None
         if token:
             send_notification(token,'Yoqtirish',f"{instance.user.username} sizning postingni yoqtirdi")
+=======
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
 
 
 @receiver(post_save,sender=Comment)
@@ -53,6 +66,7 @@ def create_notification_on_comment(sender,instance,created,**kwargs):
                 notification_type='reply',
                 comment=instance
             )
+<<<<<<< HEAD
             token = parent_owner.profile.fcm_token if hasattr(parent_owner,'profile') else None
             if token:
                 send_notification(
@@ -60,6 +74,8 @@ def create_notification_on_comment(sender,instance,created,**kwargs):
                     title="yangi javob",
                     body=f"{instance.owner.username}sizning izohingizga jabob berdi"
                 )
+=======
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
     else:
         post_owner = instance.post.owner
         if post_owner != instance.owner:
@@ -70,6 +86,7 @@ def create_notification_on_comment(sender,instance,created,**kwargs):
                 notification_type='comment',
                 comment=instance
             )
+<<<<<<< HEAD
             token = post_owner.profile.fcm_token if hasattr(post_owner, 'profile') else None
             if token:
                 send_notification(
@@ -78,6 +95,8 @@ def create_notification_on_comment(sender,instance,created,**kwargs):
                     body=f"{instance.owner.username}sizning postingizga izoh yozdi "
                 )
 
+=======
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
 
 
 
@@ -94,6 +113,9 @@ def create_notification_on_comment_like(sender,instance,action,pk_set,**kwargs):
                     notification_type='comment_like',
                     comment=instance
                 )
+<<<<<<< HEAD
                 token = instance.owner.profile.fcm_token if hasattr(instance.post.owner, 'profile') else None
                 if token:
                     send_notification(token, 'Yoqtirish', f"{instance.user.username} sizning postingni yoqtirdi")
+=======
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94

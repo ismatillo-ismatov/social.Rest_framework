@@ -3,4 +3,9 @@
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+<<<<<<< HEAD
 .env
+=======
+>>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
+__pycache__/
+*.pyc
