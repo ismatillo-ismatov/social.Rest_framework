@@ -15,11 +15,10 @@ class NotificationSerializer(serializers.ModelSerializer):
     comment = CommentSerializer(read_only=True)
     like = LikeSerializer(read_only=True)
     post = PostSerializer(read_only=True)
-<<<<<<< HEAD
-=======
+
     # sender = ShortUserSerializer(read_only=True)
     # receiver = ShortUserSerializer(read_only=True)
->>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
+
     sender = MiniProfileSerializer(source='sender.profile',read_only=True)
     receiver = MiniProfileSerializer('receiver.profile',read_only=True)
     class Meta:
