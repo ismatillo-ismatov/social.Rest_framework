@@ -13,9 +13,14 @@ class MiniProfileSerializer(serializers.ModelSerializer):
         fields = ['id','username','profileImage']
 
     def get_profileImage(self,obj):
-        if obj.profileImage:
-            request = self.context.get('request')
-            return request.build_absolute_uri(obj.profileImage.url)
+        if hasattr(obj,'profile',) and obj.profile.profileImage:
+            return obj.profile.profileImage.url
         return None
+
+    # def get_profileImage(self,obj):
+    #     if obj.profileImage:
+    #         request = self.context.get('request')
+    #         return request.build_absolute_uri(obj.profile.profileImage.url)
+    #     return None
 
 

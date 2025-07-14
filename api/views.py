@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 from cgitb import reset
 
 from django.shortcuts import render
@@ -9,14 +9,14 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-=======
+
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
->>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
+
 
 class BlackListTokenUpdateView(APIView):
     permission_classes = ()
@@ -34,7 +34,3 @@ from django.http import HttpResponse
 
 def health_check(request):
     return HttpResponse("OK")
-<<<<<<< HEAD
-
-=======
->>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94

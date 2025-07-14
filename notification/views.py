@@ -9,13 +9,13 @@ from .models import Notification
 from .serializers import NotificationSerializer
 from rest_framework import status
 from django.contrib.auth import get_user_model
-<<<<<<< HEAD
+
 from .utils import send_notification
 
 from .signals import send_test_notification
 
-=======
->>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
+
+
 # Create your views here.
 
 User = get_user_model()
@@ -42,7 +42,7 @@ class NotificationListAPIView(generics.ListAPIView):
         return Notification.objects.filter(receiver=user).order_by('-created_at')
 
 
-<<<<<<< HEAD
+
 class SendFCMNotificationView(APIView):
     def post(self,request):
         token = request.data.get('token')
@@ -56,17 +56,3 @@ class SendFCMNotificationView(APIView):
             return Response({"success":"send to notification"})
         except Exception as e:
             return Response({"error":str(e)},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-=======
->>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
-
-
-
-
-
-
-
-
-

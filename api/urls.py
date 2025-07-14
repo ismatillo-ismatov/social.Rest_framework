@@ -6,20 +6,18 @@ from zope.interface import named
 
 from friends.models import FriendsRequest
 from users.views import UserViewSet, UserSearchAPIView
-from user_profile.views import UserProfileView, UserProfileDetailView
+from user_profile.views import UserProfileView, UserProfileDetailView, EditProfileAPIView
 from posts.views import PostViewSet,StoryViewSet,StoryMessageViewSet
 from comments.views import CommentViewSet
 from votes.admin import Likes
 from votes.views import  LikeViewSet
 from friends.views import FriendViewSet
-<<<<<<< HEAD
 from notification.views import NotificationListAPIView, mark_notification_as_read,SendFCMNotificationView
 from chat.views import *
 from user_profile.views import save_fcm_token
-=======
 from notification.views import NotificationListAPIView, mark_notification_as_read
 from chat.views import *
->>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
+
 
 router=DefaultRouter()
 router.register(r"users",UserViewSet,basename='users')
@@ -35,6 +33,7 @@ urlpatterns=router.urls
 urlpatterns = [
     path('my-profile/',UserProfileView.as_view(),name='my-profile'),
     path('user/<int:pk>/',UserProfileDetailView.as_view(),name='user-profile-datail'),
+    path('edit-profile/',EditProfileAPIView.as_view(),name='edit-profile'),
     path('search_users/',UserSearchAPIView.as_view(),name='search_users'),
     path('users/<int:pk>/friends/',FriendViewSet.as_view({'get':'user_friends'}),name='user-friends'),
     path('update-online-status/',FriendViewSet.as_view({'post':'update_online_status'}),name='update-online-status'),
@@ -49,11 +48,10 @@ urlpatterns = [
     path('likes/toggle/',LikeViewSet.as_view({'post':'toggle_like'}),name='toggle'),
     path('my-notification/',NotificationListAPIView.as_view(),name='my-notifications'),
     path('mark_as_read/<int:pk>/',mark_notification_as_read,name='mark_is_read'),
-<<<<<<< HEAD
     path('save_fcm_token/',save_fcm_token,name='save-fcm-token'),
     path('send-fcm',SendFCMNotificationView.as_view()),
-=======
->>>>>>> e6d0bccbf2cc5ba26476fb64e4b90886ede60e94
+
+
     path('',include(router.urls)),
 ]
 
