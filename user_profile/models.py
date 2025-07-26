@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from social.storage_backends import ProfileImageStorage
 
 
 class UserProfile(models.Model):
@@ -15,7 +16,7 @@ class UserProfile(models.Model):
     dob = models.DateField(null=True,blank=True,default=None)
     bio = models.TextField(blank=True,null=True)
     phone = models.CharField(max_length=20,null=True,blank=True)
-    profileImage = models.ImageField(upload_to="profile_image",null=True,blank=True)
+    profileImage = models.ImageField(storage=ProfileImageStorage(),upload_to="profile_image",null=True,blank=True)
     is_online = models.BooleanField(default=False)
     last_activity = models.DateTimeField(auto_now=True)
 
