@@ -1,4 +1,4 @@
-.env
+
 *.json
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
