@@ -1,0 +1,48 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: [ "sh", "-c", "if [ \"$RUNSERVER\" = \"true\" ]; then python manage.py runserver 0.0.0.0:8000; else daphne -b 0.0.0.0 -p 8000 social.asgi:application; fi" ]
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - /home/osiyo/Desktop/myprojects/fullprojects/snaplife/social.Rest_framework/fcm/ismatov-app-firebase-adminsdk-fbsvc-6916cd964d.json:/social/fcm/ismatov-app-firebase-adminsdk-fbsvc-6916cd964d.json
+    env_file:
+      - .env
+    environment:
+      - RUNSERVER=true
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7.0
+    networks:
+      - app-network
+
+volumes:
+  static_volume:
+  media_volume:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge

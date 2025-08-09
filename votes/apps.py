@@ -6,4 +6,8 @@ class VotesConfig(AppConfig):
     name = 'votes'
 
     def ready(self):
-        import votes.signals
+        import notification.signals
+
+
+    # def ready(self):
+    #     import votes.signals

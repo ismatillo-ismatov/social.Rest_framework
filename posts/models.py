@@ -7,10 +7,9 @@ from social.storage_backends import PublicMediaStorage,VideoStorage
 class Post(models.Model):
     owner = models.ForeignKey("auth.User",related_name="posts",on_delete=models.CASCADE)
     content = models.TextField()
-    postImage = models.ImageField(storage=PublicMediaStorage(),upload_to="post_image",null=True,blank=True)
-    postVideo = models.FileField(storage=VideoStorage(),upload_to="post_video",null=True,blank=True)
+    postImage = models.ImageField(upload_to="",storage=PublicMediaStorage(),null=True,blank=True)
+    postVideo = models.FileField(upload_to="post_video",storage=VideoStorage(),null=True,blank=True)
     post_date = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
         return self.content
 

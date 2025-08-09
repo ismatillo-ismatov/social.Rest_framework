@@ -66,32 +66,48 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'notification',
-
-
-
+    'storages',
 ]
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("snaplife-redis-flzhdt.serverless.eun1.cache.amazonaws.com", 6379)],
-        },
-    },
-}
 
 
 # CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [("127.0.0.1", 6379)],
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             'hosts': [(config('REDIS_HOST'), config('REDIS_PORT', cast=int))],
 #         },
 #     },
 # }
 
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+        "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
+
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}
 
 
 # CHANNEL_LAYERS = {
@@ -102,43 +118,8 @@ CHANNEL_LAYERS = {
 
 ASGI_APPLICATION = 'social.asgi.application'
 
-AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = config('AWS_S3_REGION_NAME')
-AWS_S3_SIGNATURE_VERSION = 's3v4'
 
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-AWS_S3_ADDRESSING_STYLE = "virtual"
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
-DEFAULT_FILE_STORAGE = 'social.storage_backends.PublicMediaStorage'
 
-KAFKA_CONSUMER_CONFIG = {
-    'bootstrap_servers': 'localhost:9092',
-    'group_id': 'message-consumer-group',
-    'value_deserializer': lambda m: json.loads(m.decode('utf-8')),
-    'auto_offset_reset': 'earliest',
-    'enable_auto_commit': True
-}
-
-KAFKA_PRODUCER_CONFIG = {
-    'bootstrap_servers': 'localhost:9092',
-    'value_serializer': lambda v: json.dumps(v).encode('utf-8')
-}
-
-# KAFKA_PRODUCER_CONFIG = {
-#     'bootstrap_servers':'localhost:9092',
-#     'value_serializer':lambda v: json.dumps(v).encode('utf-8'),
-# }
-#
-# KAFKA_CONSUMER_CONFIG = {
-#     'bootstrap_servers':'localhost:9092',
-#     'group_id':'message-consumer-group',
-#     'value_deserializer':lambda m: json.loads(m.decode('utf-8'))
-# }
 
 
 
@@ -232,6 +213,7 @@ WSGI_APPLICATION = 'social.wsgi.application'
 DATABASES = {
     'default':{
         'ENGINE':'django.db.backends.mysql',
+        'MYSQL_ROOT_PASSWORD': config('MYSQL_ROOT_PASSWORD'),
         'NAME': config("DATABASE_NAME"),
         'USER': config("DATABASE_USER"),
         'PASSWORD': config("DATABASE_PASSWORD"),
@@ -281,12 +263,29 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 import os
+# settings.py
+from google.oauth2 import service_account
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(config('GS_CREDENTIALS_PATH'))
+# GS_CREDENTIALS = config('GS_CREDENTIALS_PATH')
+GS_BUCKET_NAME = config('GS_BUCKET_NAME')
+GS_PROJECT_ID = config('GS_PROJECT_ID')
+DEFAULT_FILE_STORAGE = 'yourapp.storage.PublicMediaStorage'
+# DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-MEDIA_URL = '/media/'
-# MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 MEDIA_ROOT = BASE_DIR / 'media'
+
+UPSTASH_REDIS_REST_URL = config("UPSTASH_REDIS_REST_URL")
+UPSTASH_REDIS_REST_TOKEN = config("UPSTASH_REDIS_REST_TOKEN")
+
+#
+# STATIC_URL = '/static/'
+# STATIC_ROOT = BASE_DIR / 'staticfiles'
+# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+# MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

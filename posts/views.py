@@ -1,4 +1,6 @@
 from cgitb import reset
+from timeit import default_number
+
 from django.shortcuts import render
 from django.utils.termcolors import RESET
 from rest_framework.response import Response
@@ -8,7 +10,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from websockets import serve
-
+from django.db.models import Q,Max
 from user_profile.models import UserProfile
 from votes.models import Like
 from .models import Post,Story,StoryMessage
@@ -17,6 +19,7 @@ from django.db.models import Q
 from .serializers import PostSerializer,StorySerializer,StoryMessageSerializer
 from user_profile.permissions import IsOwnerReadOnly
 from .pagination import CustomPagination
+import random
 
 
 import boto3
@@ -88,6 +91,21 @@ class PostViewSet(viewsets.ModelViewSet):
         posts = Post.objects.filter(owner__in=friend_users).order_by('-post_date')
         serializer = self.get_serializer(posts,many=True,context={'request':request})
         return  Response(serializer.data)
+
+    @action(detail=False,methods=['get'],url_path='random-posts', permission_classes=[IsAuthenticated])
+    def random_posts(self,request):
+        max_id = Post.objects.aggregate(max_id=Max("id"))['max_id']
+        if not max_id:
+            return  Response({"message":"Postlar topilmadi"},status=status.HTTP_404_NOT_FOUND)
+        random_ids = random.sample(range(1,max_id + 1), min(90,max_id))
+        posts = Post.objects.filter(id__in=random_ids)
+        posts = posts.order_by('?')[:90]
+
+        posts = list(posts)
+        random.shuffle(posts)
+        serializer = self.get_serializer(posts,many=True,context={'request':request})
+        return Response(serializer.data)
+
 
 
 

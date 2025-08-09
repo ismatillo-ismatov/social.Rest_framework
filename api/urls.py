@@ -32,7 +32,7 @@ urlpatterns=router.urls
 
 urlpatterns = [
     path('my-profile/',UserProfileView.as_view(),name='my-profile'),
-    path('user/<int:pk>/',UserProfileDetailView.as_view(),name='user-profile-datail'),
+    path('profile/<int:pk>/',UserProfileDetailView.as_view(),name='user-profile-datail'),
     path('edit-profile/',EditProfileAPIView.as_view(),name='edit-profile'),
     path('search_users/',UserSearchAPIView.as_view(),name='search_users'),
     path('users/<int:pk>/friends/',FriendViewSet.as_view({'get':'user_friends'}),name='user-friends'),

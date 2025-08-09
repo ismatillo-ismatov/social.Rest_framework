@@ -4,9 +4,9 @@ from django.contrib.admin.templatetags.admin_list import pagination
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from drf_yasg.inspectors.field import serializer_field_to_basic_type
 from rest_framework import generics,viewsets
 from django.contrib.auth.models import User
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from user_profile.serializer import ProfileSerializer
 from user_profile.models import UserProfile
@@ -359,33 +359,36 @@ class FriendViewSet(viewsets.ViewSet):
 
 
 
-    @action(detail=False,methods=["GET"])
+    @action(detail=False,methods=["GET"],url_path='find-friends')
     def find_friends(self,request):
-        user = self.request.user.pk
-        q1 = FriendsRequest.objects.filter(request_from__userName=user,status="Accepted")
-        q2 = FriendsRequest.objects.filter(request_to__userName=user,status="Accepted")
-        result=[user]
-        if q1.exists() and not q2.exists():
-            for p in range(len(q1.values())):
-                result.append(q1.values()[p]['request_to_id'])
-        elif not q1.exists() and q2.exists():
-            for p in range(len(q2.values())):
-                result.append(q2.values()[p]['request_from_id'])
-        elif q1.exists() and q2.exists():
-            for p in range(len(q1.values())):
-                result.append(q1.values()[p]['request_to_id'])
-            for p in range(len(q2.values())):
-                result.append(q2.values()[p]['request_from_id'])
+        user_profile = request.user.profile
+        accepted_requests = FriendsRequest.objects.filter(
+            Q(request_from=user_profile, status="Accepted") |
+            Q(request_to=user_profile, status="Accepted")
+        )
+        friend_ids = list(accepted_requests.values_list('request_to_id',flat=True)) + \
+                     list(accepted_requests.values_list("request_from_id",flat=True))
+        friend_ids = list(set(friend_ids))
+        friend_ids.append(user_profile.id)
 
+        pending_requests = FriendsRequest.objects.filter(
+            Q(request_from=user_profile,status="Pending") |
+            Q(request_to=user_profile,status="Pending")
+        )
+        pending_ids = list(pending_requests.values_list('request_to_id',flat=True)) + \
+                      list(pending_requests.values_list('request_from_id',flat=True))
+        exclude_ids = list(set(friend_ids + pending_ids))
+
+        non_friends = UserProfile.objects.exclude(id__in=exclude_ids)
         username = request.query_params.get('username',None)
-        find_friends = UserProfile.objects.exclude(id__in=result)
         if username:
-            find_friends = find_friends.filter(userName__username__icontains=username)
-            serializer = ProfileSerializer(find_friends,many=True)
-            return Response(serializer.data)
+            non_friends = non_friends.filter(userName__username__icontains=username)
+        if not non_friends.exists():
+            return  Response({"message":"No user found"},status=status.HTTP_404_NOT_FOUND)
 
-        if not find_friends.exists():
-            return  Response({"message":"No users found"},status=status.HTTP_404_NOT_FOUND)
+        serializer = ProfileSerializer(non_friends,many=True,context={'request':request})
+        return Response(serializer.data)
+
 
     @action(detail=False, methods=['GET'])
     def incoming_requests(self, request):
@@ -507,3 +510,5 @@ class FriendViewSet(viewsets.ViewSet):
                 {"error":"User profile not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+

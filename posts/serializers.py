@@ -25,20 +25,13 @@ class PostSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         return {
             'id': obj.owner.id,
+            'profile_id': profile.id if profile else None,
             'username': profile.userName.username if profile else obj.owner.username,
             'profileImage': request.build_absolute_uri(profile.profileImage.url) if request and profile and  profile.profileImage else None
         }
 
 
-    # def get_owner(self,obj):
-    #     profile = getattr(obj.owner,'profile',None)
-    #     request = self.context.get('request')
-    #
-    #     return {
-    #         'id':profile.id if profile else obj.owner.id,
-    #         'username': profile.userName.username if profile else obj.owner.username,
-    #         'profileImage': request.build_absolute_uri(profile.profileImage.url) if profile and profile.profileImage else None
-    #     }
+
 
 
     def get_image_url(self, obj):

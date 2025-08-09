@@ -1,16 +1,16 @@
-from storages.backends.s3boto3 import S3Boto3Storage
+from storages.backends.gcloud import GoogleCloudStorage
 
-class PublicMediaStorage(S3Boto3Storage):
+class PublicMediaStorage(GoogleCloudStorage):
     location = 'post_image'
-    default_acl = None
+    # default_acl = 'publicRead'
     file_overwrite = False
 
-class VideoStorage(S3Boto3Storage):
+class VideoStorage(GoogleCloudStorage):
     location = 'post_video'
-    default_acl = None
+    # default_acl = 'publicRead'
     file_overwrite  = False
 
-class ProfileImageStorage(S3Boto3Storage):
+class ProfileImageStorage(GoogleCloudStorage):
     location = 'profile_image'
-    default_acl = None
+    # default_acl = 'publicRead'
     file_overwrite  = False

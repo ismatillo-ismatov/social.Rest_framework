@@ -9,13 +9,4 @@ def send_notification(token,title,body):
         print("✅ Notification yuborildi:", response)
     except Exception as e:
         print("❌ Notification yuborishda xatolik:", e)
-# def send_notification(token,title,body):
-#     message = messaging.Message(
-#         notification=messaging.Notification(
-#             title=title,
-#             bdoy=body,
-#         ),
-#         token=token
-#     )
-#     response = messaging.send(message)
-#     print(f'✅ Notification sent: {response}')
+#

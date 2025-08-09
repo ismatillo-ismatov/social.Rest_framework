@@ -1,5 +1,4 @@
 from os.path import defpath
-
 from django.contrib.admin import action
 from django.contrib.staticfiles.views import serve
 from django.utils.termcolors import RESET
@@ -54,10 +53,31 @@ def save_fcm_token(request):
     token = request.data.get('fcm_token')
     if not token:
         return Response({'error':'Token is required'},status=400)
-    profile = request.user.profile
+    user = request.user
+    if not hasattr(user,'profile'):
+        return Response({'error':'Profile topilmadi'})
+    UserProfile.objects.filter(fcm_token=token).exclude(userName=user).update(fcm_token=None)
+
+    profile = user.profile
     profile.fcm_token = token
     profile.save()
     return  Response({'status':'success','token':token})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def clear_fcm_token(request):
+    user = request.user
+    if hasattr(user,'profile'):
+        user.profile.fcm_token = None
+        user.profile.save()
+        return Response({'status': 'success', 'message': "Fcm token cleared"})
+    return  Response({"error": 'Profile topilmadi'}, status=400)
+
+
+
+
+
+
 
 
 

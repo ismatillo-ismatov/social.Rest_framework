@@ -1,5 +1,4 @@
 from rest_framework.fields import SerializerMethodField
-
 from chat.models import Message
 from chat.serializers import MessageSerializer
 from posts.serializers import PostSerializer
@@ -32,6 +31,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_messages(self,obj):
         messages = Message.objects.filter(sender=obj,) | Message.objects.filter(receiver=obj)
         return MessageSerializer(messages,many=True).data
+
 
 
 

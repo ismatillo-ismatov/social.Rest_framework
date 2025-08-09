@@ -1,3 +1,4 @@
+from distutils.command.install import install
 from importlib.metadata import files
 
 from django.shortcuts import render, get_object_or_404
@@ -58,22 +59,26 @@ class MessageViewSet(viewsets.ModelViewSet):
         messages.update(is_read=True)
         return Response({"status":"Xabar oqilgan deb belgiyandi"},status=200)
 
-    @action(detail=False,methods=['post'],url_path='mark_all_as_read')
+    @action(detail=False,methods=['post'],url_path='mark_all_as_read',parser_classes=[JSONParser])
     def mark_all_ass_read(self,request):
         sender_id = request.data.get('sender')
         receiver_id = request.data.get('receiver')
 
         if not sender_id or not receiver_id:
             return Response({"error": "Sender va Receiver ID kerak"},status=400)
-        current_user_profile = request.user.profile
-        unread_message = Message.objects.filter(
+        try:
+            current_user_profile = request.user.profile
+            unread_message = Message.objects.filter(
             sender__id=sender_id,
-            receiver_id=current_user_profile,
+            receiver_id=current_user_profile.id,
             is_read=False
-        )
+            )
 
-        count = unread_message.update(is_read=True)
-        return Response({"status": f"{count} ta xabar oqilgab deb belgilandi"},status=200)
+            count = unread_message.update(is_read=True)
+            return Response({"status": f"{count} ta xabar oqilgab deb belgilandi"},status=200)
+        except Exception as e:
+            return Response({"error":f"Xatolik: {str(e)}"},status=400)
+
 
     @action(detail=False,methods=['get'],url_path='inbox')
     def inbox(self,request):
@@ -119,19 +124,41 @@ class MessageViewSet(viewsets.ModelViewSet):
         mutable_data['type'] = message_type
 
         serializer = self.get_serializer(data=mutable_data,context={'request':request})
-        if not serializer.is_valid():
-            print("Xatolik:", serializer.errors)
-            return Response(serializer.errors,status=400)
-        serializer.save()
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+
+        payload = {
+            "id": instance.id,
+            "sender_id": instance.sender.id,
+            "receiver_id": instance.receiver.id,
+            "message": instance.message,
+            "type": instance.type,
+            "file": instance.file.url if instance.file else None,
+            "timestamp": instance.timestamp.isoformat(),
+            "is_read": instance.is_read,
+            "replied_to": instance.replied_to_id,
+            "replied_to_text": instance.replied_to.message if instance.replied_to else None,
+            "replied_to_sender_id": instance.replied_to.sender.id if instance.replied_to else None,
+            "replied_to_sender_name": instance.replied_to.sender.userName.username if instance.replied_to else None,
+            "replied_to_sender_image": instance.replied_to.sender.profileImage.url if instance.replied_to and instance.replied_to.sender.profileImage else None,
+            "replied_to_ts": instance.replied_to.timestamp.isoformat() if instance.replied_to else None,
+        }
+
+        redis_client.publish(f"chat_channel_{instance.receiver.id}",json.dumps(payload))
+        redis_client.publish(f'chat_channel_{instance.sender.id}',json.dumps(payload))
+        print("Redisga yuborildi", payload)
 
 
-        message_data = serializer.data
+        return Response(self.get_serializer(instance).data,status=status.HTTP_201_CREATED)
 
 
-        redis_client.publish('chat_channel',json.dumps(message_data))
-        print("Redisga yuborildi:",message_data)
+        # message_data = serializer.data
+        #
+        #
+        # redis_client.publish('chat_channel',json.dumps(message_data))
+        # print("Redisga yuborildi:",message_data)
 
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
+        # return Response(serializer.data,status=status.HTTP_201_CREATED)
 
 
     @action(detail=False, methods=["get"])
